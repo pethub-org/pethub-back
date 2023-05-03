@@ -56,7 +56,7 @@ class HttpServer {
 
             app.use(express.json())
             app.use(cors({
-                origin: ['http://localhost:3000', 'http://localhost:3001']
+                origin: ['http://localhost:3000', 'http://localhost:3001', 'https://pethub-front-git-main-pethub.vercel.app']
             }))
             app.use(errorHandler);
 
@@ -100,7 +100,7 @@ class HttpServer {
 
             const io = new Server(this.server, {
                 cors: {
-                    origin: ['http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:5173/', 'http://localhost:5173', 'http://127.0.0.1:5174/', 'https://localhost:5173', 'https://127.0.0.1:5173', 'http://127.0.0.1:5500/', 'http://127.0.0.1:5173/']
+                    origin: ['http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:5173/', 'http://localhost:5173', 'http://127.0.0.1:5174/', 'https://localhost:5173', 'https://127.0.0.1:5173', 'http://127.0.0.1:5500/', 'http://127.0.0.1:5173/', 'https://pethub-front-git-main-pethub.vercel.app']
                 },
                 cookie: true,
                 credentials: true
