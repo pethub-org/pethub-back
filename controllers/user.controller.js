@@ -29,7 +29,7 @@ const createUser = async (req, res) => {
         const body = `<span style="text-align: center; font-weight: 700;"> ${user.firstname} </span> <span>to confirm your account please
         click
         this link</span>
-     <a href="${process.env.FRONT_URL}/auth/confirm/${emailToken}" style="color:cornflowerblue; text-decoration: none; font-size: 20px;">here</a>.<p
+     <a href="${process.env.FRONT_URL ? 'https://pethub-front-git-main-pethub.vercel.app/' : 'https://pethub-front-git-main-pethub.vercel.app/'}/auth/confirm/${emailToken}" style="color:cornflowerblue; text-decoration: none; font-size: 20px;">here</a>.<p
         style="color:red; margin-left: 12px; font-size: 20px; ">This link will expire
         in 30m.</p>`
 
@@ -315,7 +315,7 @@ const resetPasswordEmail = async (req, res) => {
         //         </div>
         //     </div>
         // </form>`;
-        const body = `Forgot Password ? to Change Your Passwords Click <a href="${process.env.FRONT_URl}/users/reset-password/${emailToken}" target="_blank"> here</a>.
+        const body = `Forgot Password ? to Change Your Passwords Click <a href="${process.env.FRONT_URl ? 'https://pethub-front-git-main-pethub.vercel.app/' : 'https://pethub-front-git-main-pethub.vercel.app/'}/users/reset-password/${emailToken}" target="_blank"> here</a>.
             <small> (If you did not request this password. Please Contact Admin</small>
         `;
         await sendEmail(email, 'Forgot your password ?', body);
