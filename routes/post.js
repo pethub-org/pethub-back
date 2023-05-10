@@ -4,9 +4,18 @@ const postModel = require('../models/Post');
 const userModel = require('../models/UserSchema');
 const { createNotificationService } = require("../services/notification.service");
 const LoggedInUsers = require('../utils/users.socket');
+const upload = require('../configs/multer.config');
+
+
 // create post 
-router.post("/create", async (req, res) => {
-  const newPost = new postModel(req.body)
+router.post("/create", upload.single('image'), async (req, res) => {
+  let image;
+  if (req.file) {
+    image = req?.file?.path;
+  } else {
+    image = '';
+  }
+  const newPost = new postModel({ ...req.body, image })
   try {
     const savedPost = await newPost.save();
     res.status(200).json(savedPost)
@@ -125,14 +134,15 @@ router.get("/timeline/all/:userId", async (req, res) => {
     const currentUser = await userModel.findById(req.params.userId);
     let userPosts = await postModel.find({ userId: currentUser._id })
       .populate({ path: 'userId', model: 'User' })
-      .populate({ path: 'userId.photos', model: 'Photo' });
+      .populate({ path: 'userId.photos', model: 'Photo' })
+      .lean();
     // userPosts.userId.currentPhoto = userPosts.userId.photos.find(photo => photo.isMain);
     // console.log(userPosts)
     // console.log({ userPosts })
 
     userPosts = userPosts.map(post => {
-      post.userId.currentPhoto = post.userId.photos.find(photo => photo.isMain);
-      return post;
+      const currentPhoto = post.userId.photos.find(photo => photo.isMain);
+      return { ...post, currentPhoto };
     })
     // userPosts.forEach(post => console.log(post.userId._id))
 
@@ -188,12 +198,27 @@ router.get("/profile/:username", async (req, res) => {
 // Share post
 router.post("/:id/share", async (req, res) => {
   try {
+    const originalPost = await postModel.findById(req.params.id);
 
-    const post = await postModel.findById(req.params.id);
+    // create new post with same content as original post
+    const repost = new postModel({
+      userId: req.body.userId,
+      desc: originalPost.desc,
+      image: originalPost.image,
+      tags: originalPost.tags,
+      location: originalPost.location,
+      hashtags: originalPost.hashtags,
+      feeling: originalPost.feeling,
+    });
+
+    // save new post to database
+    const savedRepost = await repost.save();
+
+    // add new post to shares array of original post
     const updatedPost = await postModel.findByIdAndUpdate(
       req.params.id,
       {
-        $push: { shares: req.body.userId },
+        $push: { shares: savedRepost._id },
       },
       { new: true }
     );
@@ -203,6 +228,7 @@ router.post("/:id/share", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
 //copy link 
 router.get('/:id/copy-link', async (req, res) => {
   try {
@@ -274,9 +300,9 @@ router.post('/:postId/location', async (req, res) => {
 });
 
 //add feeling to post 
-router.post('/:postId/feeling', async (req, res) => {
+router.put('/:postId/feeling', async (req, res) => {
   try {
-    const post = await postModel.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId);
 
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
@@ -286,10 +312,23 @@ router.post('/:postId/feeling', async (req, res) => {
 
     await post.save();
 
-    res.status(200).json({ message: 'Feeling added to post successfully' });
+    res.status(200).json(post);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+//search 
+router.get('/', async (req, res) => {
+  const { hashtags } = req.query;
+
+  const query = hashtags ? { hashtags: hashtags } : {};
+
+  try {
+    const hashtags = await postModel.find(query);
+    res.json(hashtags);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

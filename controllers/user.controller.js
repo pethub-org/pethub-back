@@ -136,8 +136,11 @@ const banAccount = async (req, res) => {
     }
 
     try {
-        const user = await User.findByIdAndUpdate(id, { ban: true });
-        return res.status(200).json({ message: `Account ID : ${id} has been banned` });
+        // const user = await User.findByIdAndUpdate(id, { ban: true });
+        const user = await User.findById(id, {}, { new: true });
+        user.ban = !user.ban;
+        user.save();
+        return res.status(200).json({ message: `Account ID : ${id} has been banned`, user });
     } catch (error) {
         return res.status(500).json({ error })
     }
@@ -372,7 +375,7 @@ const deleteFriend = async (req, res, next) => {
     try {
         const { deleteUserId } = req.params
         const id = req.user._id.toString();
-        await deleteFriendService(id, deleteUserId)
+        await deleteFriendService(req, id, deleteUserId)
         return res.status(200).json({ message: `user ${id} deleted from your friend list` })
     } catch (error) {
         next(error)
@@ -394,7 +397,7 @@ const acceptFriendRequestController = async (req, res, next) => {
     try {
         const { friendRequestId } = req.params;
 
-        const r = await accept(friendRequestId)
+        const r = await accept(req, friendRequestId)
         return res.status(200).json(r)
     } catch (error) {
         next(error);
@@ -402,8 +405,9 @@ const acceptFriendRequestController = async (req, res, next) => {
 }
 const declineFriendRequestController = async (req, res, next) => {
     try {
+        console.log('controller')
         const { friendRequestId } = req.params;
-
+        console.log({ friendRequestId })
         const r = await decline(friendRequestId)
         return res.status(200).json(r)
     } catch (error) {
@@ -425,7 +429,7 @@ const deleteFriendRequestcontroller = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { friendId } = req.params;
-        const isSuccess = await deleteFriendNew(userId, friendId)
+        const isSuccess = await deleteFriendNew(req, userId, friendId)
         return res.status(200).json(isSuccess)
     } catch (error) {
         next(error)

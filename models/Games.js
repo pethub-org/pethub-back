@@ -24,7 +24,7 @@ const gameSchema = new mongoose.Schema({
   },
   image : {
     type: String,
-    required : true
+     
 
   },
   platforms: [{
@@ -36,7 +36,10 @@ const gameSchema = new mongoose.Schema({
     required: true,
     min: 0,
     max: 10
-  }
+  },
+  link : {
+    type: String
+  },
 });
 
 const Game = mongoose.model('Game', gameSchema);

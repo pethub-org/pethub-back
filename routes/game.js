@@ -26,7 +26,8 @@ router.post('/', async (req, res) => {
     releaseDate: req.body.releaseDate,
     genre: req.body.genre,
     platforms: req.body.platforms,
-    rating: req.body.rating
+    rating: req.body.rating,
+    link: req.body.link
   });
 
   try {
@@ -94,5 +95,18 @@ async function getGame(req, res, next) {
   res.game = game;
   next();
 }
+//search 
+router.get('/', async (req, res) => {
+  const { genre } = req.query;
+
+  const query = genre ? { genre: genre } : {};
+
+  try {
+    const games = await Game.find(query);
+    res.json(games);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;
